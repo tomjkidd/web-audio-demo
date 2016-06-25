@@ -139,7 +139,7 @@
 (defn record-once
   [start-chan' stop-chan']
   (go
-      (<! start-chan)
+      (<! start-chan')
       (let [ms-chan (get-media-stream-chan)
             rec-chan (media-stream-consumer ms-chan)
             r (<! rec-chan)]
@@ -153,12 +153,12 @@
 
         (.startRecording r)
 
-        (<! stop-chan)
+        (<! stop-chan')
         (.finishRecording r)
         (cleanup-audio-resources)))
 
   ; Now that process to handle recording is defined, start it
-  (go (>! start-chan :start)))
+  (go (>! start-chan' :start)))
 
 (defn start
   "Start recording with the first available media stream"
