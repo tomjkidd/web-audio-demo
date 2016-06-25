@@ -33,14 +33,13 @@
   "A state machine that will allow recording, ignoring states that are not desired"
   []
   (let [start-clicks (events->chan (by-sel "#start-button") EventType.CLICK)
-        stop-clicks (events->chan (by-sel "#stop-button") EventType.CLICK)
-        running (atom false)]
+        stop-clicks (events->chan (by-sel "#stop-button") EventType.CLICK)]
     (go
-      (loop []
+      (loop [recording false]
         (let [[v c] (alts! [start-clicks stop-clicks])]
           (cond
             (= c stop-clicks)
-            (if @running
+            (if recording
               (do (println "Stop click received")
                   ;; TODO: Save the recording to file
                   (war/stop)
@@ -49,19 +48,19 @@
                   (record-app))
               (do
                 (println "Haven't started yet, ignoring stop click.")
-                (recur)))
+                (recur recording)))
             
             (= c start-clicks)
-            (do (if @running
-                  (do (println "Already recording, ignoring start click"))
+            (do (if recording
+                  (do (println "Already recording, ignoring start click")
+                      (recur recording))
                   (do
                     (println "Start click received")
                     (war/start)
-                    (swap! running (fn [_] true))))
-                (recur))
+                    (recur true))))
             :else
             (do
               (println "Unknown signal, ignoring...")
-              (recur))))))))
+              (recur recording))))))))
 
 (record-app)
