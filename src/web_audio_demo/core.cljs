@@ -13,10 +13,6 @@
 
 (enable-console-print!)
 
-(println "Hello world!")
-
-(println war/test)
-
 (defn by-sel
   "by-sel :: string -> Element
   Short-hand for document.querySelector(sel)"
