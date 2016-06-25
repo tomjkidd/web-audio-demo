@@ -5,6 +5,7 @@
              :refer [>! <! put! take! chan alts!]]
             [goog.events :as events]
             [goog.dom.classes :as classes]
+            [goog.dom.forms :as forms]
             [web-audio-demo.web-audio-recorder :as war])
   (:import [goog.events EventType]))
 
@@ -32,8 +33,15 @@
 (defn record-app
   "A state machine that will allow recording, ignoring states that are not desired"
   []
-  (let [start-clicks (events->chan (by-sel "#start-button") EventType.CLICK)
-        stop-clicks (events->chan (by-sel "#stop-button") EventType.CLICK)]
+  (let [start-button (by-sel "#start-button")
+        stop-button (by-sel "#stop-button")
+        start-clicks (events->chan start-button EventType.CLICK)
+        stop-clicks (events->chan stop-button EventType.CLICK)]
+
+    (forms/setDisabled start-button false)
+    (forms/setDisabled stop-button true)
+    (classes/remove start-button "recording")
+
     (go
       (loop [recording false]
         (let [[v c] (alts! [start-clicks stop-clicks])]
@@ -57,6 +65,9 @@
                   (do
                     (println "Start click received")
                     (war/start)
+                    (forms/setDisabled start-button true)
+                    (forms/setDisabled stop-button false)
+                    (classes/add start-button "recording")
                     (recur true))))
             :else
             (do
